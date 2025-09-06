@@ -1,0 +1,5 @@
+# 内容: SoftSource
+# 说明: 记录内网可能使用的软件源, 方便统一配置代理
+DOMAIN-SUFFIX,ubuntu.com
+DOMAIN-SUFFIX,alpinelinux.org
+DOMAIN-SUFFIX,rclone.org
