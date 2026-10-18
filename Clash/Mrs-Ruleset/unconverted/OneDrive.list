@@ -1,0 +1,7 @@
+# 内容: OneDrive (无法转换为 MRS 的其它规则, 如 DOMAIN-KEYWORD / GEOSITE / PROCESS-NAME / URL-REGEX 等)
+# 数量: 5 条
+PROCESS-NAME,OneDrive
+PROCESS-NAME,OneDriveUpdater
+DOMAIN-KEYWORD,1drv
+DOMAIN-KEYWORD,onedrive
+DOMAIN-KEYWORD,skydrive

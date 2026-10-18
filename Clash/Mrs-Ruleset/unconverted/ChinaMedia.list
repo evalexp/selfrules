@@ -1,0 +1,3 @@
+# 内容: ChinaMedia (无法转换为 MRS 的其它规则, 如 DOMAIN-KEYWORD / GEOSITE / PROCESS-NAME / URL-REGEX 等)
+# 数量: 1 条
+URL-REGEX,^https?:\/\/int[\w-\.]+iqiyi\.com

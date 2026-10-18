@@ -1,0 +1,5 @@
+# 内容: Netflix (无法转换为 MRS 的其它规则, 如 DOMAIN-KEYWORD / GEOSITE / PROCESS-NAME / URL-REGEX 等)
+# 数量: 3 条
+DOMAIN-KEYWORD,apiproxy-device-prod-nlb-
+DOMAIN-KEYWORD,dualstack.apiproxy-
+DOMAIN-KEYWORD,netflixdnstest
