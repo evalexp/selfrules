@@ -15,7 +15,11 @@ Clash Ruleset to Mihomo MRS Converter
    - 若包含 OTHER 其它规则（包括 MRS domain 不支持的 DOMAIN-KEYWORD、GEOSITE 及非网络层规则），按原 list 格式写入 Clash/Mrs-Ruleset/unconverted/<原文件名>.list，并在配置中以原格式 URL 引用。
    - 根据文件实际包含的规则种类，动态将单条 ruleset 展开为 1 至 3 条 ruleset 规则，确保所有规则 100% 完整保留。
 2. 保持不可转换的内置规则（如 []GEOIP,CN 或 []FINAL）及注释行完全原样不变。
-3. 优先检索本地 Clash/Ruleset/ 规则，远程规则自带超时保护与重试机制。
+3. 优先检索本地 Clash/Ruleset/ 规则，远程规则自带超时保护与重试机制，可通过 --proxy 指定 HTTP/HTTPS 代理。
+
+代理使用示例：
+   python3 scripts/convert_ruleset.py --proxy http://127.0.0.1:7890
+   未指定 --proxy 时，保留 urllib 默认的环境变量及系统代理行为；不支持 SOCKS 代理。
 
 输出目录：
    Clash/Mrs-Ruleset/ (MRS 规则文件)
@@ -34,9 +38,25 @@ import sys
 import tempfile
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+
+
+def parse_proxy_url(value: str) -> str:
+    """校验 urllib 支持的 HTTP/HTTPS 代理地址。"""
+    try:
+        parsed = urllib.parse.urlsplit(value)
+        if parsed.scheme not in ("http", "https") or not parsed.hostname:
+            raise ValueError
+        if parsed.port == 0 or parsed.path not in ("", "/") or parsed.query or parsed.fragment:
+            raise ValueError
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            "代理地址须为有效的 HTTP/HTTPS URL，例如 http://127.0.0.1:7890；不支持 SOCKS 代理"
+        ) from None
+    return value
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -95,6 +115,11 @@ def parse_arguments() -> argparse.Namespace:
         type=int,
         default=15,
         help="下载远程规则的超时时间 (秒, 默认: 15)",
+    )
+    parser.add_argument(
+        "--proxy",
+        type=parse_proxy_url,
+        help="下载远程规则使用的 HTTP/HTTPS 代理 (例如 http://127.0.0.1:7890；未指定时使用默认代理设置)",
     )
     return parser.parse_args()
 
@@ -177,6 +202,7 @@ def fetch_file(
     dest_path: Path,
     retries: int = 3,
     timeout: int = 15,
+    proxy: Optional[str] = None,
 ) -> Tuple[bool, str]:
     """
     获取规则文件内容并写入 dest_path。
@@ -200,10 +226,14 @@ def fetch_file(
             target,
             headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
         )
+        open_url = urllib.request.urlopen
+        if proxy:
+            handler = urllib.request.ProxyHandler({"http": proxy, "https": proxy})
+            open_url = urllib.request.build_opener(handler).open
         last_err = None
         for attempt in range(1, retries + 1):
             try:
-                with urllib.request.urlopen(req, timeout=timeout) as response:
+                with open_url(req, timeout=timeout) as response:
                     content = response.read()
                 with open(dest_path, "wb") as f:
                     f.write(content)
@@ -557,6 +587,7 @@ def main():
                 tmp_source,
                 retries=args.retries,
                 timeout=args.timeout,
+                proxy=args.proxy,
             )
             if not fetched:
                 print(f"❌ [获取失败] {entry.filename}")
