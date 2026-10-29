@@ -6,3 +6,6 @@ DOMAIN,antigravity-unleash.goog
 DOMAIN,lh3.googleusercontent.com
 DOMAIN,play.googleapis.com
 DOMAIN-KEYWORD,antigravity
+# 叠加Gemini
+DOMAIN,gemini.google.com
+DOMAIN-SUFFIX,gemini.google.com
